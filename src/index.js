@@ -50,7 +50,7 @@ const create = (loggerOptions) => {
                     format: winston.format.combine(
                         winston.format.json(),
                         winston.format(function (info) {
-                            info.reference = info.requestId || 'orphan';
+                            info.reference = info.reference || info.requestId || 'orphan';
                             info.hostname = os.hostname();
                             info.version = loggerOptions.version;
                             info.name = loggerOptions.name;
@@ -89,7 +89,7 @@ const generateRandomId = (length = 10) => {
     const result           = '';
     const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
-    for ( const i = 0; i < length; i++ ) {
+    for ( let i = 0; i < length; i++ ) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;

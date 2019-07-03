@@ -1,14 +1,22 @@
 {
-  "name": "rawb-winston-logger",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "winston": "3.2.1"
-  }
+	"name": "rawb-winston-logger",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"homepage": "https://github.com/24hr-malmo/rawb-winston-logger",
+	"bugs": { 
+		"url" : "https://github.com/24hr-malmo/rawb-winston-logger/issues" 
+	},
+	"repository": {
+		"type" : "git",
+		"url": "https://github.com/24hr-malmo/rawb-winston-logger"
+	},
+	"author": "camilo tapia <camilo.tapia@24hr.se>",
+	"license": "MIT",
+	"dependencies": {
+		"winston": "3.2.1"
+	}
 }

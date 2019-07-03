@@ -54,9 +54,9 @@ const create = (loggerOptions) => {
                             info.hostname = os.hostname();
                             info.version = loggerOptions.version;
                             info.name = loggerOptions.name;
-                            info.session = loggerOptions.session;
-                            info.start = loggerOptions.start;
-                            info.end = loggerOptions.end;
+                            info.session = info.session;
+                            info.start = info.start;
+                            info.end = info.end;
                             return info;
                         })(),
                     )

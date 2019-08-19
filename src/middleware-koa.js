@@ -1,4 +1,4 @@
-const { create } = require('./index');
+const { create } = require('./create');
 
 const createMiddleware = require('./middleware');
 

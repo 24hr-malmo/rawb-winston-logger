@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const { generateRandomId } = require('./index');
+const { generateRandomId } = require('./create');
 
 const createMiddleware = (root, headers, path, logger, httpLogger) => {
 

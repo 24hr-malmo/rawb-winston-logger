@@ -2,22 +2,25 @@ const winston = require('winston');
 const url = require('url');
 const os = require('os');
 
-const create = (loggerOptions) => {
+const create = (loggerOptions, dontCreateProxyLogger) => {
 
     const logger = winston.createLogger({
         transports: [
             new winston.transports.Console({
                 format: winston.format.combine(
                     winston.format.splat(),
-                    winston.format(function (info, opts) {
+                    winston.format(function (info) {
                         if (!info.requestId) {
                             info.message = `[system] ${info.message}`;
                         } else {
                             info.message = `[${info.requestId}] ${info.message}`;
+                            delete info.requestId;
+                            delete info.rri;
+                            delete info.rsi;
                         }
                         return info;
                     })(),
-                    winston.format.colorize({ all: true }),
+                    // winston.format.colorize({ all: true }),
                     winston.format.simple(),
                 )
             })
@@ -49,15 +52,28 @@ const create = (loggerOptions) => {
                     ssl: urlConfig.protocol === 'https:',
                     format: winston.format.combine(
                         winston.format.json(),
-                        winston.format(function (info) {
-                            info.reference = info.reference || info.requestId || 'orphan';
+                        winston.format.splat(),
+                        winston.format(function (info, ...args) {
+
+                            let reference = info.reference || info.requestId;
+                            if (!reference) {
+                                reference = 'orphan';
+                            }
+
+                            info.reference = reference;
                             info.hostname = os.hostname();
                             info.version = loggerOptions.version;
-                            info.name = loggerOptions.name;
-                            info.session = info.session;
-                            info.start = info.start;
-                            info.end = info.end;
+                            info.name = loggerOptions.name.replace(/-/g, '_');
+
+                            // SPECIAL DATA
+                            // info.session;
+                            // info.start;
+                            // info.end;
+                            // info.rri;
+                            // info.rsi;
+
                             return info;
+
                         })(),
                     )
                 })
@@ -65,6 +81,13 @@ const create = (loggerOptions) => {
         });
         httpLogger.level = loggerOptions.logLevel;
 
+    }
+
+    if (dontCreateProxyLogger) {
+        return {
+            logger,
+            httpLogger
+        };
     }
 
     // A proxy to all logs so we can go around the bug mentioned above
@@ -86,8 +109,8 @@ const create = (loggerOptions) => {
 };
 
 const generateRandomId = (length = 10) => {
-    let result           = '';
-    const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
     for ( let i = 0; i < length; i++ ) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));

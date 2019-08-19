@@ -1,0 +1,27 @@
+version: '2.1'
+services:
+
+    log-server-db:
+        image: timescale/timescaledb:latest-pg11
+        ports:
+            - 6666:5432
+        healthcheck:
+            test: ["CMD", "pg_isready", "-q", "-d", "dbusername1", "-U", "dbusername1"]
+            interval: 10s
+            timeout: 10s
+            retries: 10
+        environment:
+            - POSTGRES_PASSWORD=iretire
+            - POSTGRES_USER=dbusername1
+
+    log-server:
+        image: 24hrservice/rawb-logger:0.5.0
+        depends_on:
+            log-server-db:
+                condition: service_healthy
+        ports:
+            - 12000:80
+        environment:
+            - PORT=80
+            - ACCEPTED_TOKENS=123345
+            - LOG_SERVER_CONNECTION_URI=postgres://dbusername1:iretire@log-server-db/dbusername1

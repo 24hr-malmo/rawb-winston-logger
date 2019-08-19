@@ -9,6 +9,7 @@ const createMiddleware = (root, headers, path, logger, httpLogger) => {
     let requestId = headers['x-rawb-request-id'];
     if (!requestId) {
         requestId = generateRandomId(10);
+        headers['x-rawb-request-id'] = requestId;
     }
 
     root.rawb.requestId = requestId;

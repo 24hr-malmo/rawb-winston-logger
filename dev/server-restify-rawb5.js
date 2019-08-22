@@ -19,7 +19,7 @@ exports.init = async () => {
     }));
 
     server.get('/', async (req, res) => {
-        req.rawb.logger.info('hej');
+        req.rawb.logger.error('hej', { test: 1 } );
         res.send('tjena');
     });
 

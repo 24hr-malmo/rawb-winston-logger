@@ -48,7 +48,11 @@ const createMiddleware = (root, headers, path, logger, httpLogger) => {
         options.headers['x-rawb-request-trace-id'] = requestTraceId;
         root.rawb.logger.info(`${options.method || 'GET'} ${url}`, { rsi: requestTraceId });
 
-        return fetch(url, options);
+        return fetch(url, options)
+            .then(result => {
+                root.rawb.logger.info(`RESP ${url}`, { rrri: requestTraceId });
+                return result;
+            });
 
     };
 

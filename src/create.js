@@ -64,6 +64,7 @@ const create = (loggerOptions, dontCreateProxyLogger) => {
                             info.hostname = os.hostname();
                             info.version = loggerOptions.version;
                             info.name = loggerOptions.name.replace(/-/g, '_');
+                            info.localTime = new Date().getTime();
 
                             // SPECIAL DATA
                             // info.session;

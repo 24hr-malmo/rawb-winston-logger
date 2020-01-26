@@ -50,8 +50,21 @@ const createMiddleware = (root, headers, path, logger, httpLogger) => {
 
         return fetch(url, options)
             .then(result => {
-                root.rawb.logger.info(`RESP ${url}`, { rrri: requestTraceId });
+                result.body.on('end', () => {
+                    root.rawb.logger.info(`RESP ${url}`, { rrri: requestTraceId })
+                });
+                result.body.on('close', () => {
+                    root.rawb.logger.info(`RESP ${url}`, { rrri: requestTraceId });
+                });
+                result.body.on('error', () => {
+                    root.rawb.logger.error(`RESP ${url}`, { rrri: requestTraceId });
+                });
+                result.body.on('data', () => { });
                 return result;
+            })
+            .catch(err => {
+                root.rawb.logger.error(`RESP ${url}`, { rrri: requestTraceId });
+                throw err;
             });
 
     };

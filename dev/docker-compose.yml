@@ -6,7 +6,7 @@ services:
         ports:
             - 6666:5432
         healthcheck:
-            test: ["CMD", "pg_isready", "-q", "-d", "dbusername1", "-U", "dbusername1"]
+            test: ["CMD", "pg_isready", "-q", "-d", "content", "-U", "dbusername1"]
             interval: 10s
             timeout: 10s
             retries: 10
@@ -15,7 +15,9 @@ services:
             - POSTGRES_USER=dbusername1
 
     log-server:
-        image: 24hrservice/rawb-logger:0.5.0
+        image: 24hrservice/rawb-logger:0.7.7
+        # build:
+        #     context: ../../rawb-logger
         depends_on:
             log-server-db:
                 condition: service_healthy

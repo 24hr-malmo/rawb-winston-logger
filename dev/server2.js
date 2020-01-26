@@ -19,11 +19,14 @@ router.get('/bar', async (ctx, next) => {
     let request = await ctx.rawb.fetch('http://localhost:5000/baq');
     let result = await request.text();
 
-    let request2 = await ctx.rawb.fetch('http://localhost:7000/');
-    let result2 = await request2.text();
+    ctx.rawb.logger.info('ASYNC!');
+    ctx.rawb.fetch('http://localhost:7000/feeeel')
+        .then(request2 => {
+            let result2 = request2.text();
+        });
 
     // await new Promise(resolve => setTimeout(resolve, 100));
-    ctx.body = 'bar, ' + result + ', ' + result2;
+    ctx.body = 'bar, ' + result + ', '; //  + result2;
 
 
 });

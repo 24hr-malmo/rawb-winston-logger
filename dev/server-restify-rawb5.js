@@ -18,9 +18,11 @@ exports.init = async () => {
         logServerUrl: 'http://localhost:7777/log/123345',
     }));
 
-    server.get('/', async (req, res) => {
-        req.rawb.logger.error('hej', { test: 1 } );
-        res.send('tjena');
+    server.get('/feeeel', async (req, res) => {
+        setTimeout(() => {
+            req.rawb.logger.error('hej', { test: 1 } );
+            res.send('tjena');
+        }, 1000);
     });
 
 

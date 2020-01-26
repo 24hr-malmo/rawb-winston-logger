@@ -15,15 +15,19 @@ services:
             - POSTGRES_USER=dbusername1
 
     log-server:
-        image: 24hrservice/rawb-logger:0.7.7
+        image: 24hrservice/rawb-logger:0.7.12
         # build:
         #     context: ../../rawb-logger
+        # volumes:
+        #     - ../../rawb-logger/src:/app/src
         depends_on:
             log-server-db:
                 condition: service_healthy
         ports:
-            - 12000:80
+            - 7778:81
+            - 7777:80
         environment:
             - PORT=80
+            - PORT_VIEWER=81
             - ACCEPTED_TOKENS=123345
             - LOG_SERVER_CONNECTION_URI=postgres://dbusername1:iretire@log-server-db/dbusername1

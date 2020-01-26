@@ -12,7 +12,7 @@ app.use(rawbLoggerMiddleware({
     name: 'server1',
     logServerUrl: 'http://localhost:7777/log/123345',
 }));
-
+// postgres://logger:loggerpassword@192.168.88.19/logger
 router.get('/foo', async (ctx, next) => {
 
     ctx.rawb.logger.info('Start!!!!!!!!!!!', { tjena: 1});

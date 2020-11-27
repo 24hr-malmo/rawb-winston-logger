@@ -1,41 +1,28 @@
-const winston = require('winston');
+const pino = require('pino')
 const url = require('url');
 const os = require('os');
+const fetch = require('node-fetch');
+
+const prettyRequestId = value => {
+    return `R: ${value}`;
+};
 
 const create = (loggerOptions, dontCreateProxyLogger) => {
 
-    const logger = winston.createLogger({
-        transports: [
-            new winston.transports.Console({
-                format: winston.format.combine(
-                    winston.format.splat(),
-                    winston.format(function (info) {
-                        if (!info.requestId) {
-                            info.message = `[system] ${info.message}`;
-                        } else {
-                            info.message = `[${info.requestId}] ${info.message}`;
-                            delete info.requestId;
-                            delete info.rri;
-                            delete info.rsi;
-                        }
-                        return info;
-                    })(),
-                    // winston.format.colorize({ all: true }),
-                    winston.format.simple(),
-                )
-            })
-        ],
+    const logger = pino({ 
+        prettyPrint: true,
+        customLevels: {
+            verbose: 35
+        },
+        level: loggerOptions.level || 'trace',
+        customPrettifiers: {
+            requestId: prettyRequestId,
+        }
     });
 
-    logger.level = loggerOptions.logLevel;
-
-    if (loggerOptions.transports) {
-        loggerOptions.transports.forEach(transport => logger.add(transport));
-    }
-
-
-    // SEPARATE HTTP LOGGER BECAUSE OF WINSTON BUG THAT MUTATES THE INFO OBJECT
-    // https://github.com/winstonjs/winston/issues/1430
+    // if (loggerOptions.transports) {
+    //     loggerOptions.transports.forEach(transport => logger.add(transport));
+    // }
 
     let httpLogger;
 
@@ -43,44 +30,90 @@ const create = (loggerOptions, dontCreateProxyLogger) => {
 
         let urlConfig = url.parse(loggerOptions.logServerUrl);
 
-        httpLogger = winston.createLogger({
-            transports: [
-                new winston.transports.Http({
-                    host: urlConfig.hostname,
-                    path: urlConfig.path,
-                    port: parseInt(urlConfig.port, 10),
-                    ssl: urlConfig.protocol === 'https:',
-                    format: winston.format.combine(
-                        winston.format.json(),
-                        winston.format.splat(),
-                        winston.format(function (info, ...args) {
+        // let httpQueue = [];
 
-                            let reference = info.reference || info.requestId;
-                            if (!reference) {
-                                reference = 'orphan';
-                            }
+        const send = async (payload) => {
+            console.log(payload);
+            await fetch(loggerOptions.logServerUrl, {
+                method: 'post',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
-                            info.reference = reference;
-                            info.hostname = os.hostname();
-                            info.version = loggerOptions.version;
-                            info.name = loggerOptions.name.replace(/-/g, '_');
-                            info.localTime = new Date().getTime();
+        //     const sendQueue = async () => {
+        // 
+        //         for(let i = 
+        // 
+        //     }
+        // 
+        //     setInterval(sendQueue, 1000);
+        // 
 
-                            // SPECIAL DATA
-                            // info.session;
-                            // info.start;
-                            // info.end;
-                            // info.rri;
-                            // info.rsi;
 
-                            return info;
-
-                        })(),
-                    )
-                })
-            ]
+        httpLogger = {};
+        Object.keys(logger.levels.values).forEach(level => {
+            httpLogger[level] = (...args) => {
+                const info = {...args};
+                let reference = info.reference || info.requestId;
+                if (!reference) {
+                    reference = 'orphan';
+                }
+                info.reference = reference;
+                info.hostname = os.hostname();
+                info.version = loggerOptions.version;
+                info.name = loggerOptions.name.replace(/-/g, '_');
+                info.localTime = new Date().getTime();
+                send(info);
+            }
+            httpLogger.trafic = (...args) => {
+                const info = {...args};
+                let reference = info.reference || info.requestId;
+                if (!reference) {
+                    reference = 'orphan';
+                }
+                info.reference = reference;
+                info.hostname = os.hostname();
+                info.version = loggerOptions.version;
+                info.name = loggerOptions.name.replace(/-/g, '_');
+                info.localTime = new Date().getTime();
+                send(info);
+            };
         });
-        httpLogger.level = loggerOptions.logLevel;
+        httpLogger.levels = logger.levels;
+
+
+        //                     host: urlConfig.hostname,
+        //                     path: urlConfig.path,
+        //                     port: parseInt(urlConfig.port, 10),
+        //                     ssl: urlConfig.protocol === 'https:',
+        //                     format: winston.format.combine(
+        //                         winston.format.json(),
+        //                         winston.format.splat(),
+        //                         winston.format(function (info, ...args) {
+        // 
+        //                             let reference = info.reference || info.requestId;
+        //                             if (!reference) {
+        //                                 reference = 'orphan';
+        //                             }
+        // 
+        //                             info.reference = reference;
+        //                             info.hostname = os.hostname();
+        //                             info.version = loggerOptions.version;
+        //                             info.name = loggerOptions.name.replace(/-/g, '_');
+        //                             info.localTime = new Date().getTime();
+        // 
+        //                             // SPECIAL DATA
+        //                             // info.session;
+        //                             // info.start;
+        //                             // info.end;
+        //                             // info.rri;
+        //                             // info.rsi;
+        // 
+        //                             return info;
+        // 
+        //                         })(),
+        //                     )
 
     }
 
@@ -90,18 +123,24 @@ const create = (loggerOptions, dontCreateProxyLogger) => {
             httpLogger
         };
     }
-
+    // 
     // A proxy to all logs so we can go around the bug mentioned above
     const customLogger = () => {
         const proxy = {};
-        Object.keys(logger.levels).forEach(level => {
+        Object.keys(logger.levels.values).forEach(level => {
             proxy[level] = (...args) => {
                 logger[level](...args);
                 if (httpLogger) {
                     httpLogger[level](...args);
                 }
+            }
+            proxy.trafic = (...args) => {
+                if (httpLogger) {
+                    httpLogger.trafic(...args);
+                }
             };
         });
+        proxy.levels = logger.levels;
         return proxy;
     };
 

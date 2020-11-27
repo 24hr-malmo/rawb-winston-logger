@@ -5,11 +5,6 @@ services:
         image: timescale/timescaledb:latest-pg11
         ports:
             - 6666:5432
-        healthcheck:
-            test: ["CMD", "pg_isready", "-q", "-d", "content", "-U", "dbusername1"]
-            interval: 10s
-            timeout: 10s
-            retries: 10
         environment:
             - POSTGRES_PASSWORD=iretire
             - POSTGRES_USER=dbusername1
@@ -20,9 +15,6 @@ services:
         #     context: ../../rawb-logger
         # volumes:
         #     - ../../rawb-logger/src:/app/src
-        depends_on:
-            log-server-db:
-                condition: service_healthy
         ports:
             - 7778:81
             - 7777:80

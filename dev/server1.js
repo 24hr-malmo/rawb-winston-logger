@@ -12,6 +12,7 @@ app.use(rawbLoggerMiddleware({
     name: 'server1',
     logServerUrl: 'http://localhost:7777/log/123345',
 }));
+
 // postgres://logger:loggerpassword@192.168.88.19/logger
 router.get('/foo', async (ctx, next) => {
 
@@ -31,5 +32,4 @@ app
     .use(router.routes())
     .use(router.allowedMethods());
 
-
-exports.init = async () => new Promise(resolve => app.listen(3000, resolve));
+exports.init = async () => new Promise(resolve => app.listen(3001, resolve));

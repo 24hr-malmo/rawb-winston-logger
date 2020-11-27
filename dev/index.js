@@ -6,6 +6,7 @@ const s3 = require('./server3');
 const s4 = require('./server-restify4');
 const s5 = require('./server-restify-rawb5');
 
+
 const run = async () => {
 
     await s1.init();
@@ -14,10 +15,10 @@ const run = async () => {
     await s4.init();
     await s5.init();
 
-    let response1 = await fetch('http://localhost:3000/foo');
+    let response1 = await fetch('http://localhost:3001/foo');
     let result1 = await response1.text();
 
-    console.log(result1);
+    // console.log(result1);
 
 };
 
